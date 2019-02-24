@@ -1,4 +1,4 @@
-/*
+i/*
  
  File: CoreTextArcView.m (iOS version)
  
@@ -18,27 +18,61 @@
 
 #define ARCVIEW_DEBUG_MODE          NO
 
-#define ARCVIEW_DEFAULT_FONT_NAME	@"Helvetica"
-#define ARCVIEW_DEFAULT_FONT_SIZE	64.0
-#define ARCVIEW_DEFAULT_RADIUS		150.0
-#define ARCVIEW_DEFAULT_ARC_SIZE    180.0
-
+#define ARCVIEW_DEFAULT_FONT_NAME	@"HelveticaNeue-Thin"
+#define ARCVIEW_DEFAULT_FONT_SIZE	12.0
+#define ARCVIEW_DEFAULT_RADIUS		32.0
+#define ARCVIEW_DEFAULT_ARC_SIZE    (90)
 
 
 @implementation CoreTextArcView
 
-- (id)initWithFrame:(CGRect)frame {
-    self = [super initWithFrame:frame];
-    if (self) {
-		self.font = [UIFont fontWithName:ARCVIEW_DEFAULT_FONT_NAME size:ARCVIEW_DEFAULT_FONT_SIZE];
-		self.text = @"Curvaceous Type";
-		self.radius = ARCVIEW_DEFAULT_RADIUS;
+
+- (id)initWithFrame:(CGRect)frame andLabel:(NSString *)label
+{
+    CGRect f = frame;
+    
+    self.font = [UIFont fontWithName:ARCVIEW_DEFAULT_FONT_NAME size:ARCVIEW_DEFAULT_FONT_SIZE];
+    self.text = label;
+    CGSize stringBoundingBox = [self.text sizeWithFont:self.font];
+
+    f.origin.x = frame.origin.x - stringBoundingBox.height;
+    f.origin.y = frame.origin.y - stringBoundingBox.height;
+   
+    f.size.width = frame.size.width + stringBoundingBox.height * 2.0;
+    f.size.height = frame.size.height + stringBoundingBox.height * 2.0;
+    
+   
+    self = [super initWithFrame:f];
+    
+    if (self)
+    {
+        [self setClipsToBounds:NO];
+        
+        float shift = 4.0;
+        
+		// self.radius = (f.size.width > f.size.height ? f.size.height / 2 : f.size.width / 2);
+        
+        // self.radius = (frame.size.width > frame.size.height ? frame.size.height / 2 : frame.size.width / 2) + stringBoundingBox.height / 2.0 ;
+        self.radius = (frame.size.width > frame.size.height ? frame.size.height / 2 : frame.size.width / 2) + shift ; //   + stringBoundingBox.height / 4.0;
+        // self.radius = (f.size.width > f.size.height ? f.size.height / 2 : f.size.width / 2);
+        
+        float d = (stringBoundingBox.width / ((self.radius + stringBoundingBox.height / 2.0) * 2.0 * M_PI)) * 360;
+        // self.arcSize = ARCVIEW_DEFAULT_ARC_SIZE;
+        
+        // d = 180.0;
+        self.arcSize = d;
+
 		self.showsGlyphBounds = NO;
-		self.showsLineMetrics = NO;
+        self.showsLineMetrics = NO;
 		self.dimsSubstitutedGlyphs = NO;
         self.color = [UIColor whiteColor];
-        self.arcSize = ARCVIEW_DEFAULT_ARC_SIZE;
-        self.shiftH = self.shiftV = 0.0f;
+        self.shiftH = 0.0f;
+        // self.shiftV = stringBoundingBox.height - 2;
+        self.shiftV = self.radius / 2.0; // stringBoundingBox.height; // f.size.height - self.radius - stringBoundingBox.height;
+
+        self.userInteractionEnabled = NO;
+
+        self.backgroundColor = [UIColor clearColor];
     }
     return self;
 }
@@ -86,20 +120,23 @@ static void PrepareGlyphArcInfo(CTLineRef line, CFIndex glyphCount, GlyphArcInfo
 
 
 // ensure that redraw occurs.
--(void)setText:(NSString *)text{
+-(void)setText:(NSString *)text
+{
     _string = text;
     
     [self setNeedsDisplay];
 }
 
 //set arc size in degrees (180 = half circle)
--(void)setArcSize:(CGFloat)degrees{
-    _arcSize = degrees * M_PI/180.0;
+-(void)setArcSize:(CGFloat)degrees
+{
+    _arcSize = degrees * M_PI / 180.0;
 }
 
 //get arc size in degrees
--(CGFloat)arcSize{
-    return _arcSize * 180.0/M_PI;
+-(CGFloat)arcSize
+{
+    return _arcSize * 180.0 / M_PI;
 }
 
 - (void)drawRect:(CGRect)rect {
@@ -129,14 +166,15 @@ static void PrepareGlyphArcInfo(CTLineRef line, CFIndex glyphCount, GlyphArcInfo
     CGContextConcatCTM(context, t0);
     
     
-    
-    
 	CGContextSetTextMatrix(context, CGAffineTransformIdentity);
     
-    if(ARCVIEW_DEBUG_MODE){
+    if(ARCVIEW_DEBUG_MODE)
+    {
         // Draw a black background (debug)
         CGContextSetFillColorWithColor(context, [UIColor blackColor].CGColor);
         CGContextFillRect(context, self.layer.bounds);
+        
+        self.alpha = 0.5;
     }
     
     NSAttributedString *attStr = self.attributedString;
@@ -158,11 +196,12 @@ static void PrepareGlyphArcInfo(CTLineRef line, CFIndex glyphCount, GlyphArcInfo
     
 	CGContextTranslateCTM(context, CGRectGetMidX(rect)+_shiftH, CGRectGetMidY(rect)+_shiftV - self.radius / 2.0);
     
-    if(ARCVIEW_DEBUG_MODE){
+    if(ARCVIEW_DEBUG_MODE)
+    {
         // Stroke the arc in red for verification.
         CGContextBeginPath(context);
         CGContextAddArc(context, 0.0, 0.0, self.radius, M_PI_2+_arcSize/2.0, M_PI_2-_arcSize/2.0, 1);
-        CGContextSetRGBStrokeColor(context, 1.0, 0.0, 0.0, 1.0);
+        CGContextSetRGBStrokeColor(context, 1.0, 1.0, 1.0, 1.0);
         CGContextStrokePath(context);
 	}
     
@@ -305,11 +344,13 @@ static void PrepareGlyphArcInfo(CTLineRef line, CFIndex glyphCount, GlyphArcInfo
 }
 
 @dynamic showsGlyphBounds;
-- (BOOL)showsGlyphBounds {
+- (BOOL)showsGlyphBounds
+{
 	return _flags.showsGlyphBounds;
 }
 
-- (void)setShowsGlyphBounds:(BOOL)show {
+- (void)setShowsGlyphBounds:(BOOL)show
+{
 	_flags.showsGlyphBounds = show ? 1 : 0;
 }
 
@@ -318,17 +359,21 @@ static void PrepareGlyphArcInfo(CTLineRef line, CFIndex glyphCount, GlyphArcInfo
 	return _flags.showsLineMetrics;
 }
 
-- (void)setShowsLineMetrics:(BOOL)show {
+- (void)setShowsLineMetrics:(BOOL)show
+{
 	_flags.showsLineMetrics = show ? 1 : 0;
 }
 
 @dynamic dimsSubstitutedGlyphs;
-- (BOOL)dimsSubstitutedGlyphs {
+- (BOOL)dimsSubstitutedGlyphs
+{
 	return _flags.dimsSubstitutedGlyphs;
 }
 
-- (void)setDimsSubstitutedGlyphs:(BOOL)dim {
+- (void)setDimsSubstitutedGlyphs:(BOOL)dim
+{
 	_flags.dimsSubstitutedGlyphs = dim ? 1 : 0;
 }
 
 @end
+

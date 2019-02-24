@@ -31,6 +31,7 @@
 		unsigned int	reserved:29;
 	}					_flags;
 }
+- (id)initWithFrame:(CGRect)frame andLabel:(NSString *)label;
 
 @property(strong, nonatomic) UIFont *font;
 @property(strong, nonatomic) NSString *text;
@@ -43,3 +44,4 @@
 @property(nonatomic) CGFloat arcSize;
 @property(nonatomic) CGFloat shiftH, shiftV;
 @end
+
