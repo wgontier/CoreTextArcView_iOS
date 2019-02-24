@@ -9,7 +9,7 @@
 Pod::Spec.new do |s|
   s.name             = 'CoreTextArcView'
   s.version          = '0.1.0'
-  s.summary          = ''
+  s.summary          = 'Arc Shaped Text'
 
 #  s.swift_version = '4.2'
 
@@ -24,7 +24,7 @@ Pod::Spec.new do |s|
   s.homepage         = 'https://github.com/alecvance/CoreTextArcView_iOS'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
   s.author           = { 'Alec Vance' => '' }
-  s.source           = { :git => 'https://github.com/alecvance/CoreTextArcView_iOS', :tag => s.version.to_s }
+  s.source           = { :git => 'https://github.com/alecvance/CoreTextArcView_iOS.git', :tag => s.version.to_s }
 
   s.ios.deployment_target = '8.0'
 
