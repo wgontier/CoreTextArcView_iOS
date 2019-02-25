@@ -1,4 +1,4 @@
-i/*
+/*
  
  File: CoreTextArcView.m (iOS version)
  
@@ -18,9 +18,9 @@ i/*
 
 #define ARCVIEW_DEBUG_MODE          NO
 
-#define ARCVIEW_DEFAULT_FONT_NAME	@"HelveticaNeue-Thin"
-#define ARCVIEW_DEFAULT_FONT_SIZE	12.0
-#define ARCVIEW_DEFAULT_RADIUS		32.0
+#define ARCVIEW_DEFAULT_FONT_NAME    @"HelveticaNeue-Thin"
+#define ARCVIEW_DEFAULT_FONT_SIZE    12.0
+#define ARCVIEW_DEFAULT_RADIUS        32.0
 #define ARCVIEW_DEFAULT_ARC_SIZE    (90)
 
 
@@ -34,14 +34,14 @@ i/*
     self.font = [UIFont fontWithName:ARCVIEW_DEFAULT_FONT_NAME size:ARCVIEW_DEFAULT_FONT_SIZE];
     self.text = label;
     CGSize stringBoundingBox = [self.text sizeWithFont:self.font];
-
+    
     f.origin.x = frame.origin.x - stringBoundingBox.height;
     f.origin.y = frame.origin.y - stringBoundingBox.height;
-   
+    
     f.size.width = frame.size.width + stringBoundingBox.height * 2.0;
     f.size.height = frame.size.height + stringBoundingBox.height * 2.0;
     
-   
+    
     self = [super initWithFrame:f];
     
     if (self)
@@ -50,7 +50,7 @@ i/*
         
         float shift = 4.0;
         
-		// self.radius = (f.size.width > f.size.height ? f.size.height / 2 : f.size.width / 2);
+        // self.radius = (f.size.width > f.size.height ? f.size.height / 2 : f.size.width / 2);
         
         // self.radius = (frame.size.width > frame.size.height ? frame.size.height / 2 : frame.size.width / 2) + stringBoundingBox.height / 2.0 ;
         self.radius = (frame.size.width > frame.size.height ? frame.size.height / 2 : frame.size.width / 2) + shift ; //   + stringBoundingBox.height / 4.0;
@@ -61,17 +61,17 @@ i/*
         
         // d = 180.0;
         self.arcSize = d;
-
-		self.showsGlyphBounds = NO;
+        
+        self.showsGlyphBounds = NO;
         self.showsLineMetrics = NO;
-		self.dimsSubstitutedGlyphs = NO;
+        self.dimsSubstitutedGlyphs = NO;
         self.color = [UIColor whiteColor];
         self.shiftH = 0.0f;
         // self.shiftV = stringBoundingBox.height - 2;
         self.shiftV = self.radius / 2.0; // stringBoundingBox.height; // f.size.height - self.radius - stringBoundingBox.height;
-
+        
         self.userInteractionEnabled = NO;
-
+        
         self.backgroundColor = [UIColor clearColor];
     }
     return self;
@@ -79,43 +79,43 @@ i/*
 
 
 typedef struct GlyphArcInfo {
-	CGFloat			width;
-	CGFloat			angle;	// in radians
+    CGFloat            width;
+    CGFloat            angle;    // in radians
 } GlyphArcInfo;
 
 static void PrepareGlyphArcInfo(CTLineRef line, CFIndex glyphCount, GlyphArcInfo *glyphArcInfo, CGFloat arcSizeRad)
 {
-	NSArray *runArray = (__bridge NSArray *)CTLineGetGlyphRuns(line);
-	
-	// Examine each run in the line, updating glyphOffset to track how far along the run is in terms of glyphCount.
-	CFIndex glyphOffset = 0;
-	for (id run in runArray) {
-		CFIndex runGlyphCount = CTRunGetGlyphCount((__bridge CTRunRef)run);
-		
-		// Ask for the width of each glyph in turn.
-		CFIndex runGlyphIndex = 0;
-		for (; runGlyphIndex < runGlyphCount; runGlyphIndex++) {
-			glyphArcInfo[runGlyphIndex + glyphOffset].width = CTRunGetTypographicBounds((__bridge CTRunRef)run, CFRangeMake(runGlyphIndex, 1), NULL, NULL, NULL);
-		}
-		
-		glyphOffset += runGlyphCount;
-	}
-	
-	double lineLength = CTLineGetTypographicBounds(line, NULL, NULL, NULL);
-	
-	CGFloat prevHalfWidth = glyphArcInfo[0].width / 2.0;
-	glyphArcInfo[0].angle = (prevHalfWidth / lineLength) * arcSizeRad;
-	
-	// Divide the arc into slices such that each one covers the distance from one glyph's center to the next.
-	CFIndex lineGlyphIndex = 1;
-	for (; lineGlyphIndex < glyphCount; lineGlyphIndex++) {
-		CGFloat halfWidth = glyphArcInfo[lineGlyphIndex].width / 2.0;
-		CGFloat prevCenterToCenter = prevHalfWidth + halfWidth;
-		
-		glyphArcInfo[lineGlyphIndex].angle = (prevCenterToCenter / lineLength) * arcSizeRad;
-		
-		prevHalfWidth = halfWidth;
-	}
+    NSArray *runArray = (__bridge NSArray *)CTLineGetGlyphRuns(line);
+    
+    // Examine each run in the line, updating glyphOffset to track how far along the run is in terms of glyphCount.
+    CFIndex glyphOffset = 0;
+    for (id run in runArray) {
+        CFIndex runGlyphCount = CTRunGetGlyphCount((__bridge CTRunRef)run);
+        
+        // Ask for the width of each glyph in turn.
+        CFIndex runGlyphIndex = 0;
+        for (; runGlyphIndex < runGlyphCount; runGlyphIndex++) {
+            glyphArcInfo[runGlyphIndex + glyphOffset].width = CTRunGetTypographicBounds((__bridge CTRunRef)run, CFRangeMake(runGlyphIndex, 1), NULL, NULL, NULL);
+        }
+        
+        glyphOffset += runGlyphCount;
+    }
+    
+    double lineLength = CTLineGetTypographicBounds(line, NULL, NULL, NULL);
+    
+    CGFloat prevHalfWidth = glyphArcInfo[0].width / 2.0;
+    glyphArcInfo[0].angle = (prevHalfWidth / lineLength) * arcSizeRad;
+    
+    // Divide the arc into slices such that each one covers the distance from one glyph's center to the next.
+    CFIndex lineGlyphIndex = 1;
+    for (; lineGlyphIndex < glyphCount; lineGlyphIndex++) {
+        CGFloat halfWidth = glyphArcInfo[lineGlyphIndex].width / 2.0;
+        CGFloat prevCenterToCenter = prevHalfWidth + halfWidth;
+        
+        glyphArcInfo[lineGlyphIndex].angle = (prevCenterToCenter / lineLength) * arcSizeRad;
+        
+        prevHalfWidth = halfWidth;
+    }
 }
 
 
@@ -140,16 +140,16 @@ static void PrepareGlyphArcInfo(CTLineRef line, CFIndex glyphCount, GlyphArcInfo
 }
 
 - (void)drawRect:(CGRect)rect {
-	// Don't draw if we don't have a font or string
-	if (self.font == NULL || self.text == NULL)
-		return;
+    // Don't draw if we don't have a font or string
+    if (self.font == NULL || self.text == NULL)
+        return;
     
-	// Initialize the text matrix to a known value
-	CGContextRef context = UIGraphicsGetCurrentContext();
+    // Initialize the text matrix to a known value
+    CGContextRef context = UIGraphicsGetCurrentContext();
     
     
     //Reset the transformation
-	//Doing this means you have to reset the contentScaleFactor to 1.0
+    //Doing this means you have to reset the contentScaleFactor to 1.0
     CGAffineTransform t0 = CGContextGetCTM(context);
     
     
@@ -166,7 +166,7 @@ static void PrepareGlyphArcInfo(CTLineRef line, CFIndex glyphCount, GlyphArcInfo
     CGContextConcatCTM(context, t0);
     
     
-	CGContextSetTextMatrix(context, CGAffineTransformIdentity);
+    CGContextSetTextMatrix(context, CGAffineTransformIdentity);
     
     if(ARCVIEW_DEBUG_MODE)
     {
@@ -179,22 +179,22 @@ static void PrepareGlyphArcInfo(CTLineRef line, CFIndex glyphCount, GlyphArcInfo
     
     NSAttributedString *attStr = self.attributedString;
     CFAttributedStringRef asr = (__bridge CFAttributedStringRef)attStr;
-	CTLineRef line = CTLineCreateWithAttributedString(asr);
-	assert(line != NULL);
-	
-	CFIndex glyphCount = CTLineGetGlyphCount(line);
-	if (glyphCount == 0) {
-		CFRelease(line);
-		return;
-	}
-	
-	GlyphArcInfo *	glyphArcInfo = (GlyphArcInfo*)calloc(glyphCount, sizeof(GlyphArcInfo));
-	PrepareGlyphArcInfo(line, glyphCount, glyphArcInfo, _arcSize);
-	
-	// Move the origin from the lower left of the view nearer to its center.
-	CGContextSaveGState(context);
+    CTLineRef line = CTLineCreateWithAttributedString(asr);
+    assert(line != NULL);
     
-	CGContextTranslateCTM(context, CGRectGetMidX(rect)+_shiftH, CGRectGetMidY(rect)+_shiftV - self.radius / 2.0);
+    CFIndex glyphCount = CTLineGetGlyphCount(line);
+    if (glyphCount == 0) {
+        CFRelease(line);
+        return;
+    }
+    
+    GlyphArcInfo *    glyphArcInfo = (GlyphArcInfo*)calloc(glyphCount, sizeof(GlyphArcInfo));
+    PrepareGlyphArcInfo(line, glyphCount, glyphArcInfo, _arcSize);
+    
+    // Move the origin from the lower left of the view nearer to its center.
+    CGContextSaveGState(context);
+    
+    CGContextTranslateCTM(context, CGRectGetMidX(rect)+_shiftH, CGRectGetMidY(rect)+_shiftV - self.radius / 2.0);
     
     if(ARCVIEW_DEBUG_MODE)
     {
@@ -203,102 +203,102 @@ static void PrepareGlyphArcInfo(CTLineRef line, CFIndex glyphCount, GlyphArcInfo
         CGContextAddArc(context, 0.0, 0.0, self.radius, M_PI_2+_arcSize/2.0, M_PI_2-_arcSize/2.0, 1);
         CGContextSetRGBStrokeColor(context, 1.0, 1.0, 1.0, 1.0);
         CGContextStrokePath(context);
-	}
+    }
     
-	// Rotate the context 90 degrees counterclockwise (per 180 degrees)
-	CGContextRotateCTM(context, _arcSize/2.0);
-	
-	// Now for the actual drawing. The angle offset for each glyph relative to the previous glyph has already been calculated; with that information in hand, draw those glyphs overstruck and centered over one another, making sure to rotate the context after each glyph so the glyphs are spread along a semicircular path.
+    // Rotate the context 90 degrees counterclockwise (per 180 degrees)
+    CGContextRotateCTM(context, _arcSize/2.0);
     
-	CGPoint textPosition = CGPointMake(0.0, self.radius);
-	CGContextSetTextPosition(context, textPosition.x, textPosition.y);
-	
-	CFArrayRef runArray = CTLineGetGlyphRuns(line);
-	CFIndex runCount = CFArrayGetCount(runArray);
-	
-	CFIndex glyphOffset = 0;
-	CFIndex runIndex = 0;
-	for (; runIndex < runCount; runIndex++) {
-		CTRunRef run = (CTRunRef)CFArrayGetValueAtIndex(runArray, runIndex);
-		CFIndex runGlyphCount = CTRunGetGlyphCount(run);
-		Boolean	drawSubstitutedGlyphsManually = false;
-		CTFontRef runFont = CFDictionaryGetValue(CTRunGetAttributes(run), kCTFontAttributeName);
-		
-		// Determine if we need to draw substituted glyphs manually. Do so if the runFont is not the same as the overall font.
-		if (self.dimsSubstitutedGlyphs && ![self.font isEqual:(__bridge UIFont *)runFont]) {
-			drawSubstitutedGlyphsManually = true;
-		}
-		
-		CFIndex runGlyphIndex = 0;
-		for (; runGlyphIndex < runGlyphCount; runGlyphIndex++) {
-			CFRange glyphRange = CFRangeMake(runGlyphIndex, 1);
-			CGContextRotateCTM(context, -(glyphArcInfo[runGlyphIndex + glyphOffset].angle));
-			
-			// Center this glyph by moving left by half its width.
-			CGFloat glyphWidth = glyphArcInfo[runGlyphIndex + glyphOffset].width;
-			CGFloat halfGlyphWidth = glyphWidth / 2.0;
-			CGPoint positionForThisGlyph = CGPointMake(textPosition.x - halfGlyphWidth, textPosition.y);
-			
-			// Glyphs are positioned relative to the text position for the line, so offset text position leftwards by this glyph's width in preparation for the next glyph.
-			textPosition.x -= glyphWidth;
-			
-			CGAffineTransform textMatrix = CTRunGetTextMatrix(run);
-			textMatrix.tx = positionForThisGlyph.x;
-			textMatrix.ty = positionForThisGlyph.y;
-			CGContextSetTextMatrix(context, textMatrix);
+    // Now for the actual drawing. The angle offset for each glyph relative to the previous glyph has already been calculated; with that information in hand, draw those glyphs overstruck and centered over one another, making sure to rotate the context after each glyph so the glyphs are spread along a semicircular path.
+    
+    CGPoint textPosition = CGPointMake(0.0, self.radius);
+    CGContextSetTextPosition(context, textPosition.x, textPosition.y);
+    
+    CFArrayRef runArray = CTLineGetGlyphRuns(line);
+    CFIndex runCount = CFArrayGetCount(runArray);
+    
+    CFIndex glyphOffset = 0;
+    CFIndex runIndex = 0;
+    for (; runIndex < runCount; runIndex++) {
+        CTRunRef run = (CTRunRef)CFArrayGetValueAtIndex(runArray, runIndex);
+        CFIndex runGlyphCount = CTRunGetGlyphCount(run);
+        Boolean    drawSubstitutedGlyphsManually = false;
+        CTFontRef runFont = CFDictionaryGetValue(CTRunGetAttributes(run), kCTFontAttributeName);
+        
+        // Determine if we need to draw substituted glyphs manually. Do so if the runFont is not the same as the overall font.
+        if (self.dimsSubstitutedGlyphs && ![self.font isEqual:(__bridge UIFont *)runFont]) {
+            drawSubstitutedGlyphsManually = true;
+        }
+        
+        CFIndex runGlyphIndex = 0;
+        for (; runGlyphIndex < runGlyphCount; runGlyphIndex++) {
+            CFRange glyphRange = CFRangeMake(runGlyphIndex, 1);
+            CGContextRotateCTM(context, -(glyphArcInfo[runGlyphIndex + glyphOffset].angle));
             
-			if (!drawSubstitutedGlyphsManually) {
-				CTRunDraw(run, context, glyphRange);
-			}
-			else {
-				// We need to draw the glyphs manually in this case because we are effectively applying a graphics operation by setting the context fill color. Normally we would use kCTForegroundColorAttributeName, but this does not apply as we don't know the ranges for the colors in advance, and we wanted demonstrate how to manually draw.
-				CGFontRef cgFont = CTFontCopyGraphicsFont(runFont, NULL);
-				CGGlyph glyph;
-				CGPoint position;
-				
-				CTRunGetGlyphs(run, glyphRange, &glyph);
-				CTRunGetPositions(run, glyphRange, &position);
-				
-				CGContextSetFont(context, cgFont);
-				CGContextSetFontSize(context, CTFontGetSize(runFont));
-				CGContextSetRGBFillColor(context, 0.25, 0.25, 0.25, 0.5);
-				CGContextShowGlyphsAtPositions(context, &glyph, &position, 1);
-				
-				CFRelease(cgFont);
-			}
-			
-			// Draw the glyph bounds
-			if ((self.showsGlyphBounds) != 0) {
-				CGRect glyphBounds = CTRunGetImageBounds(run, context, glyphRange);
-				
-				CGContextSetRGBStrokeColor(context, 0.0, 0.0, 1.0, 1.0);
-				CGContextStrokeRect(context, glyphBounds);
-			}
-			// Draw the bounding boxes defined by the line metrics
-			if ((self.showsLineMetrics) != 0) {
-				CGRect lineMetrics;
-				CGFloat ascent, descent;
-				
-				CTRunGetTypographicBounds(run, glyphRange, &ascent, &descent, NULL);
-				
-				// The glyph is centered around the y-axis
-				lineMetrics.origin.x = -halfGlyphWidth;
-				lineMetrics.origin.y = positionForThisGlyph.y - descent;
-				lineMetrics.size.width = glyphWidth;
-				lineMetrics.size.height = ascent + descent;
-				
-				CGContextSetRGBStrokeColor(context, 0.0, 1.0, 0.0, 1.0);
-				CGContextStrokeRect(context, lineMetrics);
-			}
-		}
-		
-		glyphOffset += runGlyphCount;
-	}
-	
-	CGContextRestoreGState(context);
-	
-	free(glyphArcInfo);
-	CFRelease(line);
+            // Center this glyph by moving left by half its width.
+            CGFloat glyphWidth = glyphArcInfo[runGlyphIndex + glyphOffset].width;
+            CGFloat halfGlyphWidth = glyphWidth / 2.0;
+            CGPoint positionForThisGlyph = CGPointMake(textPosition.x - halfGlyphWidth, textPosition.y);
+            
+            // Glyphs are positioned relative to the text position for the line, so offset text position leftwards by this glyph's width in preparation for the next glyph.
+            textPosition.x -= glyphWidth;
+            
+            CGAffineTransform textMatrix = CTRunGetTextMatrix(run);
+            textMatrix.tx = positionForThisGlyph.x;
+            textMatrix.ty = positionForThisGlyph.y;
+            CGContextSetTextMatrix(context, textMatrix);
+            
+            if (!drawSubstitutedGlyphsManually) {
+                CTRunDraw(run, context, glyphRange);
+            }
+            else {
+                // We need to draw the glyphs manually in this case because we are effectively applying a graphics operation by setting the context fill color. Normally we would use kCTForegroundColorAttributeName, but this does not apply as we don't know the ranges for the colors in advance, and we wanted demonstrate how to manually draw.
+                CGFontRef cgFont = CTFontCopyGraphicsFont(runFont, NULL);
+                CGGlyph glyph;
+                CGPoint position;
+                
+                CTRunGetGlyphs(run, glyphRange, &glyph);
+                CTRunGetPositions(run, glyphRange, &position);
+                
+                CGContextSetFont(context, cgFont);
+                CGContextSetFontSize(context, CTFontGetSize(runFont));
+                CGContextSetRGBFillColor(context, 0.25, 0.25, 0.25, 0.5);
+                CGContextShowGlyphsAtPositions(context, &glyph, &position, 1);
+                
+                CFRelease(cgFont);
+            }
+            
+            // Draw the glyph bounds
+            if ((self.showsGlyphBounds) != 0) {
+                CGRect glyphBounds = CTRunGetImageBounds(run, context, glyphRange);
+                
+                CGContextSetRGBStrokeColor(context, 0.0, 0.0, 1.0, 1.0);
+                CGContextStrokeRect(context, glyphBounds);
+            }
+            // Draw the bounding boxes defined by the line metrics
+            if ((self.showsLineMetrics) != 0) {
+                CGRect lineMetrics;
+                CGFloat ascent, descent;
+                
+                CTRunGetTypographicBounds(run, glyphRange, &ascent, &descent, NULL);
+                
+                // The glyph is centered around the y-axis
+                lineMetrics.origin.x = -halfGlyphWidth;
+                lineMetrics.origin.y = positionForThisGlyph.y - descent;
+                lineMetrics.size.width = glyphWidth;
+                lineMetrics.size.height = ascent + descent;
+                
+                CGContextSetRGBStrokeColor(context, 0.0, 1.0, 0.0, 1.0);
+                CGContextStrokeRect(context, lineMetrics);
+            }
+        }
+        
+        glyphOffset += runGlyphCount;
+    }
+    
+    CGContextRestoreGState(context);
+    
+    free(glyphArcInfo);
+    CFRelease(line);
     
     
     
@@ -314,66 +314,65 @@ static void PrepareGlyphArcInfo(CTLineRef line, CFIndex glyphCount, GlyphArcInfo
 
 @dynamic attributedString;
 - (NSAttributedString *)attributedString {
-	// Create an attributed string with the current font and string.
-	assert(self.font != nil);
-	assert(self.text != nil);
-	
-	// Create our attributes...
+    // Create an attributed string with the current font and string.
+    assert(self.font != nil);
+    assert(self.text != nil);
+    
+    // Create our attributes...
     
     // font
     CTFontRef fontRef = CTFontCreateWithName((__bridge CFStringRef)self.font.fontName, self.font.pointSize, NULL);
     
     // color
-	CGColorRef colorRef = self.color.CGColor;
+    CGColorRef colorRef = self.color.CGColor;
     
     // pack it into attributes dictionary
     
-	NSDictionary *attributesDict = [NSDictionary dictionaryWithObjectsAndKeys:
+    NSDictionary *attributesDict = [NSDictionary dictionaryWithObjectsAndKeys:
                                     (__bridge id)fontRef, (id)kCTFontAttributeName,
                                     colorRef, (id)kCTForegroundColorAttributeName,
                                     nil];
-	assert(attributesDict != nil);
+    assert(attributesDict != nil);
     
-	
-	// Create the attributed string
-	NSAttributedString *attrString = [[NSAttributedString alloc] initWithString:self.text attributes:attributesDict];
+    
+    // Create the attributed string
+    NSAttributedString *attrString = [[NSAttributedString alloc] initWithString:self.text attributes:attributesDict];
     
     CFRelease(fontRef);
     
-	return attrString;
+    return attrString;
 }
 
 @dynamic showsGlyphBounds;
 - (BOOL)showsGlyphBounds
 {
-	return _flags.showsGlyphBounds;
+    return _flags.showsGlyphBounds;
 }
 
 - (void)setShowsGlyphBounds:(BOOL)show
 {
-	_flags.showsGlyphBounds = show ? 1 : 0;
+    _flags.showsGlyphBounds = show ? 1 : 0;
 }
 
 @dynamic showsLineMetrics;
 - (BOOL)showsLineMetrics {
-	return _flags.showsLineMetrics;
+    return _flags.showsLineMetrics;
 }
 
 - (void)setShowsLineMetrics:(BOOL)show
 {
-	_flags.showsLineMetrics = show ? 1 : 0;
+    _flags.showsLineMetrics = show ? 1 : 0;
 }
 
 @dynamic dimsSubstitutedGlyphs;
 - (BOOL)dimsSubstitutedGlyphs
 {
-	return _flags.dimsSubstitutedGlyphs;
+    return _flags.dimsSubstitutedGlyphs;
 }
 
 - (void)setDimsSubstitutedGlyphs:(BOOL)dim
 {
-	_flags.dimsSubstitutedGlyphs = dim ? 1 : 0;
+    _flags.dimsSubstitutedGlyphs = dim ? 1 : 0;
 }
 
 @end
-

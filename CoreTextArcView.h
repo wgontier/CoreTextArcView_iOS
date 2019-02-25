@@ -17,21 +17,22 @@
 
 @interface CoreTextArcView : UIView {
 @private
-	UIFont *			_font;
-	NSString *			_string;
-	CGFloat				_radius;
+    UIFont *            _font;
+    NSString *            _string;
+    CGFloat                _radius;
     UIColor *           _color;
     CGFloat             _arcSize;
     CGFloat             _shiftH, _shiftV; // horiz & vertical shift
-
-	struct {
-		unsigned int	showsGlyphBounds:1;
-		unsigned int	showsLineMetrics:1;
-		unsigned int	dimsSubstitutedGlyphs:1;
-		unsigned int	reserved:29;
-	}					_flags;
+    
+    struct {
+        unsigned int    showsGlyphBounds:1;
+        unsigned int    showsLineMetrics:1;
+        unsigned int    dimsSubstitutedGlyphs:1;
+        unsigned int    reserved:29;
+    } _flags;
 }
-- (id)initWithFrame:(CGRect)frame andLabel:(NSString *)label;
+
+-(id)initWithFrame:(CGRect)frame andLabel:(NSString *)label;
 
 @property(strong, nonatomic) UIFont *font;
 @property(strong, nonatomic) NSString *text;
@@ -43,5 +44,5 @@
 @property(strong, nonatomic) UIColor *color;
 @property(nonatomic) CGFloat arcSize;
 @property(nonatomic) CGFloat shiftH, shiftV;
-@end
 
+@end
